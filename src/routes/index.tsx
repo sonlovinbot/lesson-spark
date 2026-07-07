@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BADGES,
-  xpToLevel,
   type Lesson,
   type MatchPair,
   type QuizItem,
@@ -13,77 +12,17 @@ import { authHeaders, useApiKey } from "@/lib/settings";
 import { useTheme, type Theme } from "@/lib/theme";
 import { useProgress } from "@/lib/progress";
 import { useAuth } from "@/lib/auth";
+import { useLessonHistory, type LessonRecord } from "@/lib/lessons";
+import { XP, QUESTS, xpToLevel, levelTitle } from "@/lib/scoring";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: LumiApp,
 });
 
-/* ---------------- Sample lesson for first paint ---------------- */
-const SAMPLE: Lesson = {
-  title: "Everyday Café Conversations",
-  topic: "Ordering food & drinks",
-  level: "Elementary",
-  intro:
-    "Learn friendly phrases and vocabulary for ordering at a café. Perfect for real-world practice!",
-  vocabulary: [
-    { word: "order", pos: "verb", definition: "to ask for food or a drink", emoji: "📝", pronunciation: "/ˈɔːr.dər/", example: "I'd like to order a latte, please." },
-    { word: "menu", pos: "noun", definition: "a list of food and drinks", emoji: "📋", pronunciation: "/ˈmen.juː/", example: "Can I see the menu?" },
-    { word: "delicious", pos: "adj", definition: "very tasty", emoji: "😋", pronunciation: "/dɪˈlɪʃ.əs/", example: "This cake is delicious!" },
-    { word: "bill", pos: "noun", definition: "the paper that shows how much to pay", emoji: "🧾", pronunciation: "/bɪl/", example: "Could I have the bill, please?" },
-    { word: "tip", pos: "noun", definition: "extra money for good service", emoji: "💰", pronunciation: "/tɪp/", example: "We left a small tip." },
-    { word: "recommend", pos: "verb", definition: "to say something is good", emoji: "👍", pronunciation: "/ˌrek.əˈmend/", example: "What do you recommend?" },
-    { word: "vegetarian", pos: "adj", definition: "no meat or fish", emoji: "🥗", pronunciation: "/ˌvedʒ.əˈter.i.ən/", example: "Do you have vegetarian options?" },
-    { word: "takeaway", pos: "noun", definition: "food to eat somewhere else", emoji: "🥡", pronunciation: "/ˈteɪk.ə.weɪ/", example: "I'll have it as a takeaway." },
-  ],
-  trueFalse: [
-    { statement: "'Bill' means the same as 'menu'.", answer: false, explain: "'Bill' is what you pay; 'menu' shows the food." },
-    { statement: "A tip is extra money for the server.", answer: true, explain: "Tips reward good service." },
-    { statement: "Takeaway means eating in the café.", answer: false, explain: "Takeaway is food you take with you." },
-    { statement: "Vegetarian food has no meat.", answer: true, explain: "Correct — no meat or fish." },
-    { statement: "'Recommend' means to complain.", answer: false, explain: "It means to suggest something good." },
-  ],
-  fillBlank: {
-    dialogue: [
-      { speaker: "Server", line: "Hi! Are you ready to ____?", blank: "order" },
-      { speaker: "You", line: "Yes, could I see the ____ again?", blank: "menu" },
-      { speaker: "Server", line: "Of course. Anything I can ____?", blank: "recommend" },
-      { speaker: "You", line: "Do you have ____ options?", blank: "vegetarian" },
-      { speaker: "Server", line: "Yes! The veggie wrap is very ____.", blank: "delicious" },
-      { speaker: "You", line: "Great — and could I get the ____ after?", blank: "bill" },
-    ],
-    options: ["order", "menu", "recommend", "vegetarian", "delicious", "bill", "tip", "takeaway"],
-  },
-  quiz: [
-    { question: "What do you say to see the food list?", choices: ["Can I see the bill?", "Can I see the menu?", "Can I order?", "Can I tip?"], answerIndex: 1, explain: "The menu shows the food." },
-    { question: "Which word means 'very tasty'?", choices: ["Delicious", "Vegetarian", "Bill", "Tip"], answerIndex: 0, explain: "'Delicious' = very tasty." },
-    { question: "You want food to go. You ask for a…", choices: ["Menu", "Recommendation", "Takeaway", "Tip"], answerIndex: 2, explain: "Takeaway = food to go." },
-    { question: "A ____ has no meat.", choices: ["takeaway", "bill", "vegetarian meal", "menu"], answerIndex: 2, explain: "Vegetarian meals have no meat." },
-    { question: "Extra money for good service is a…", choices: ["bill", "tip", "menu", "order"], answerIndex: 1, explain: "That's a tip!" },
-  ],
-  matching: [
-    { left: "order", right: "ask for food" },
-    { left: "menu", right: "list of dishes" },
-    { left: "bill", right: "amount to pay" },
-    { left: "tip", right: "extra money for service" },
-    { left: "takeaway", right: "food to go" },
-    { left: "vegetarian", right: "no meat" },
-  ],
-  wheelPrompts: [
-    "Order your favorite coffee",
-    "Ask for the menu politely",
-    "Ask what the server recommends",
-    "Ask for the bill",
-    "Order a vegetarian meal",
-    "Ask if takeaway is possible",
-    "Compliment the food",
-    "Ask about the price",
-  ],
-};
-
 /* ---------------- Root ---------------- */
 function LumiApp() {
-  const [lesson, setLesson] = useState<Lesson>(SAMPLE);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -92,7 +31,10 @@ function LumiApp() {
   const [progress, setProgress] = useProgress();
   const { theme, setTheme, isDark } = useTheme();
   const { user, signOut } = useAuth();
+  const history = useLessonHistory();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [confetti, setConfetti] = useState(false);
@@ -109,7 +51,15 @@ function LumiApp() {
     prevLevel.current = level;
   }, [level]);
 
-  const addXP = useCallback((amount: number, questId?: string) => {
+  // Gate any API-calling action behind login. Returns true if allowed.
+  const requireAuth = useCallback(() => {
+    if (user) return true;
+    setAuthGateOpen(true);
+    return false;
+  }, [user]);
+
+  const addXP = useCallback((amount: number) => {
+    if (amount <= 0) return;
     const today = new Date().toISOString().slice(0, 10);
     setProgress((prev) => {
       const newBadges = new Set(prev.badges);
@@ -126,19 +76,19 @@ function LumiApp() {
       });
       if (streak >= 3) newBadges.add("streak3");
       if (newXp > 0) newBadges.add("first");
-      const quests = prev.quests.map((q) =>
-        questId && q.id === questId ? { ...q, done: true } : q,
-      );
-      return {
-        xp: newXp,
-        streak,
-        lastActive: today,
-        badges: Array.from(newBadges),
-        quests,
-      };
+      return { ...prev, xp: newXp, streak, lastActive: today, badges: Array.from(newBadges) };
     });
     setXpBurst({ id: Date.now(), amount });
     window.setTimeout(() => setXpBurst(null), 900);
+  }, [setProgress]);
+
+  // Mark a daily quest complete once its milestone is reached.
+  const completeQuest = useCallback((id: string) => {
+    setProgress((prev) =>
+      prev.quests.some((q) => q.id === id && !q.done)
+        ? { ...prev, quests: prev.quests.map((q) => (q.id === id ? { ...q, done: true } : q)) }
+        : prev,
+    );
   }, [setProgress]);
 
   const awardBadge = useCallback((id: string) => {
@@ -148,6 +98,7 @@ function LumiApp() {
   }, [setProgress]);
 
   async function generateLesson() {
+    if (!requireAuth()) return;
     if (!source.trim()) {
       setErr("Paste some text or a topic first.");
       return;
@@ -162,13 +113,24 @@ function LumiApp() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
-      setLesson(json.lesson as Lesson);
+      const newLesson = json.lesson as Lesson;
+      setLesson(newLesson);
       setTab("cards");
+      void history.save(newLesson, source); // persist to history
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Reload a saved lesson from history.
+  function openSaved(rec: LessonRecord) {
+    setLesson(rec.data);
+    setSource(rec.source ?? "");
+    setTab("cards");
+    setHistoryOpen(false);
+    setErr(null);
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -180,7 +142,7 @@ function LumiApp() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
-      <TopBar level={level} into={into} need={need} xp={progress.xp} streak={progress.streak} isDark={isDark} onToggleTheme={() => setTheme(isDark ? "light" : "dark")} onSettings={() => setSettingsOpen(true)} userEmail={user?.email ?? null} onSignOut={signOut} />
+      <TopBar level={level} into={into} need={need} xp={progress.xp} streak={progress.streak} isDark={isDark} onToggleTheme={() => setTheme(isDark ? "light" : "dark")} onSettings={() => setSettingsOpen(true)} onHistory={() => { if (requireAuth()) setHistoryOpen(true); }} userEmail={user?.email ?? null} onSignOut={signOut} />
 
       {/* Uploader */}
       <section className="glass-card mt-6 p-6 md:p-8">
@@ -192,6 +154,13 @@ function LumiApp() {
             </p>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => { if (requireAuth()) setHistoryOpen(true); }}
+              className="chip hover:bg-white"
+              title="Your saved lessons"
+            >
+              📚 History
+            </button>
             <label className="chip cursor-pointer hover:bg-white">
               📎 Upload .txt
               <input type="file" accept=".txt,.md,text/plain" className="hidden" onChange={onFile} />
@@ -219,55 +188,63 @@ function LumiApp() {
         </div>
       </section>
 
-      {/* Lesson header */}
-      <section className="mt-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="chip !bg-lavender/70">Level: {lesson.level}</span>
-            <span className="chip !bg-mint/70">{lesson.vocabulary.length} words</span>
-          </div>
-          <h2 className="mt-2 text-3xl md:text-4xl">{lesson.title}</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{lesson.intro}</p>
-        </div>
+      {/* Daily quests — always visible */}
+      <section className="mt-6 flex justify-end">
         <DailyQuests quests={progress.quests} />
       </section>
 
-      {/* Tabs */}
-      <nav className="mt-6 flex flex-wrap gap-2">
-        {[
-          ["cards", "🎴 Flashcards"],
-          ["match", "🧩 Matching"],
-          ["tf", "✅ True / False"],
-          ["fill", "💬 Fill the blanks"],
-          ["quiz", "❓ Quiz"],
-          ["wheel", "🎡 Lucky Wheel"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setTab(id as typeof tab)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              tab === id
-                ? "bg-primary text-primary-foreground shadow-[var(--shadow-pop)]"
-                : "bg-white/70 text-foreground hover:bg-white"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+      {lesson ? (
+        <>
+          {/* Lesson header */}
+          <section className="mt-6">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="chip !bg-lavender/70">Level: {lesson.level}</span>
+              <span className="chip !bg-mint/70">{lesson.vocabulary.length} words</span>
+            </div>
+            <h2 className="mt-2 text-3xl md:text-4xl">{lesson.title}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{lesson.intro}</p>
+          </section>
 
-      <section className="mt-6">
-        {tab === "cards" && <Flashcards items={lesson.vocabulary} onXP={(n) => addXP(n, "learn5")} />}
-        {tab === "match" && (
-          <Matching pairs={lesson.matching} onXP={addXP} onComplete={() => { awardBadge("matchmaster"); addXP(30, "match"); }} />
-        )}
-        {tab === "tf" && <TrueFalse items={lesson.trueFalse} onXP={addXP} />}
-        {tab === "fill" && <FillBlanks data={lesson.fillBlank} onXP={addXP} />}
-        {tab === "quiz" && (
-          <Quiz items={lesson.quiz} onXP={addXP} onPerfect={() => { awardBadge("perfectquiz"); addXP(50, "quiz3"); }} />
-        )}
-        {tab === "wheel" && <LuckyWheel prompts={lesson.wheelPrompts} onXP={addXP} />}
-      </section>
+          {/* Tabs */}
+          <nav className="mt-6 flex flex-wrap gap-2">
+            {[
+              ["cards", "🎴 Flashcards"],
+              ["match", "🧩 Matching"],
+              ["tf", "✅ True / False"],
+              ["fill", "💬 Fill the blanks"],
+              ["quiz", "❓ Quiz"],
+              ["wheel", "🎡 Lucky Wheel"],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id as typeof tab)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  tab === id
+                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-pop)]"
+                    : "bg-white/70 text-foreground hover:bg-white"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+
+          <section className="mt-6">
+            {tab === "cards" && <Flashcards items={lesson.vocabulary} onXP={addXP} onQuest={completeQuest} requireAuth={requireAuth} />}
+            {tab === "match" && (
+              <Matching pairs={lesson.matching} onXP={addXP} onComplete={() => { awardBadge("matchmaster"); addXP(XP.matchComplete); completeQuest("match"); }} />
+            )}
+            {tab === "tf" && <TrueFalse items={lesson.trueFalse} onXP={addXP} />}
+            {tab === "fill" && <FillBlanks data={lesson.fillBlank} onXP={addXP} />}
+            {tab === "quiz" && (
+              <Quiz items={lesson.quiz} onXP={addXP} onQuest={completeQuest} onPerfect={() => { awardBadge("perfectquiz"); addXP(XP.quizPerfect); }} />
+            )}
+            {tab === "wheel" && <LuckyWheel prompts={lesson.wheelPrompts} onXP={addXP} />}
+          </section>
+        </>
+      ) : (
+        <EmptyState isAuthed={!!user} onGenerate={generateLesson} onLoginGate={() => setAuthGateOpen(true)} />
+      )}
 
       <BadgeShelf badges={progress.badges} />
 
@@ -295,12 +272,153 @@ function LumiApp() {
       )}
       {confetti && <Confetti />}
       {settingsOpen && <SettingsPanel theme={theme} setTheme={setTheme} onClose={() => setSettingsOpen(false)} />}
+      {authGateOpen && <AuthGateModal onClose={() => setAuthGateOpen(false)} />}
+      {historyOpen && (
+        <HistoryModal history={history} onOpen={openSaved} onClose={() => setHistoryOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+/* ---------------- Empty state (no lesson yet) ---------------- */
+function EmptyState({ isAuthed, onGenerate, onLoginGate }: { isAuthed: boolean; onGenerate: () => void; onLoginGate: () => void }) {
+  return (
+    <section className="glass-card mt-6 flex flex-col items-center gap-4 p-10 text-center md:p-16">
+      <div className="text-6xl">🪄</div>
+      <h2 className="text-2xl md:text-3xl">No lesson yet</h2>
+      <p className="max-w-md text-sm text-muted-foreground">
+        Paste a topic or paragraph above and tap <b>Generate lesson</b>. Lumi turns it into
+        flashcards, quizzes, matching games and more.
+      </p>
+      {isAuthed ? (
+        <button
+          onClick={onGenerate}
+          className="rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+        >
+          ✨ Generate your first lesson
+        </button>
+      ) : (
+        <button
+          onClick={onLoginGate}
+          className="rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+        >
+          🔓 Log in to start
+        </button>
+      )}
+    </section>
+  );
+}
+
+/* ---------------- Login-required gate ---------------- */
+function AuthGateModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div className="glass-card w-full max-w-sm animate-pop-in p-6 text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="text-5xl">🔒</div>
+        <h3 className="mt-3 text-2xl">Login required</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sign in to generate lessons, create AI images, and save your progress across devices.
+        </p>
+        <div className="mt-5 flex justify-center gap-2">
+          <Link
+            to="/login"
+            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+          >
+            🔓 Log in
+          </Link>
+          <Link
+            to="/register"
+            className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold transition hover:-translate-y-0.5"
+          >
+            ✨ Sign up
+          </Link>
+        </div>
+        <button onClick={onClose} className="mt-3 text-xs text-muted-foreground hover:underline">
+          Maybe later
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Lesson history ---------------- */
+function HistoryModal({
+  history,
+  onOpen,
+  onClose,
+}: {
+  history: ReturnType<typeof useLessonHistory>;
+  onOpen: (rec: LessonRecord) => void;
+  onClose: () => void;
+}) {
+  const { items, loading, remove } = history;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="glass-card flex max-h-[80vh] w-full max-w-lg animate-pop-in flex-col p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-2xl">📚 Lesson history</h3>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-8 w-8 place-items-center rounded-xl bg-white/70 hover:bg-white"
+          >
+            ✕
+          </button>
+        </div>
+        {loading ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>
+        ) : items.length === 0 ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            No saved lessons yet. Generate one and it'll appear here.
+          </div>
+        ) : (
+          <ul className="space-y-2 overflow-y-auto">
+            {items.map((rec) => (
+              <li
+                key={rec.id}
+                className="flex items-center gap-2 rounded-2xl bg-white/70 p-3"
+              >
+                <button onClick={() => onOpen(rec)} className="flex-1 text-left">
+                  <div className="font-bold">{rec.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {rec.level ? `${rec.level} · ` : ""}
+                    {rec.data.vocabulary?.length ?? 0} words ·{" "}
+                    {new Date(rec.created_at).toLocaleDateString()}
+                  </div>
+                </button>
+                <button
+                  onClick={() => onOpen(rec)}
+                  className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
+                >
+                  Open
+                </button>
+                <button
+                  onClick={() => remove(rec.id)}
+                  title="Delete"
+                  className="grid h-8 w-8 place-items-center rounded-xl bg-white/70 hover:bg-destructive/10"
+                >
+                  🗑
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
 
 /* ---------------- Top bar ---------------- */
-function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettings, userEmail, onSignOut }: { level: number; into: number; need: number; xp: number; streak: number; isDark: boolean; onToggleTheme: () => void; onSettings: () => void; userEmail: string | null; onSignOut: () => void }) {
+function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettings, onHistory, userEmail, onSignOut }: { level: number; into: number; need: number; xp: number; streak: number; isDark: boolean; onToggleTheme: () => void; onSettings: () => void; onHistory: () => void; userEmail: string | null; onSignOut: () => void }) {
   const pct = Math.min(100, Math.round((into / need) * 100));
   return (
     <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
@@ -315,7 +433,7 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
       </div>
       <div className="flex-1">
         <div className="mb-1 flex items-center justify-between text-xs font-semibold">
-          <span>Level {level}</span>
+          <span>Level {level} · {levelTitle(level)}</span>
           <span className="text-muted-foreground">{into} / {need} XP</span>
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-secondary">
@@ -328,6 +446,14 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
       <div className="flex items-center gap-2">
         <span className="chip !bg-peach">🔥 {streak}d</span>
         <span className="chip !bg-lemon">⚡ {xp} XP</span>
+        <button
+          onClick={onHistory}
+          title="Lesson history"
+          aria-label="Lesson history"
+          className="grid h-9 w-9 place-items-center rounded-xl bg-white/70 text-lg transition hover:-translate-y-0.5 hover:bg-white"
+        >
+          📚
+        </button>
         <button
           onClick={onToggleTheme}
           title={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -425,7 +551,7 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
       onClick={onClose}
     >
       <div
-        className="glass-card w-full max-w-md animate-pop-in p-6"
+        className="glass-card max-h-[88vh] w-full max-w-md animate-pop-in overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 flex items-center justify-between">
@@ -438,10 +564,7 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
             ✕
           </button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Add your Coachio API key to generate lessons & images. It's stored only in
-          this browser (localStorage) and sent straight to the API.
-        </p>
+        <ProfileSection />
 
         <label className="mt-4 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
           Appearance
@@ -469,6 +592,9 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
         <label className="mt-4 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
           Coachio API key
         </label>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Stored only in this browser (localStorage) and sent straight to the API.
+        </p>
         <div className="mt-1 flex gap-2">
           <input
             type={show ? "text" : "password"}
@@ -530,12 +656,127 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
   );
 }
 
+/* ---------------- Profile (inside Settings) ---------------- */
+function ProfileSection() {
+  const { user, updateProfile, updatePassword } = useAuth();
+  const [name, setName] = useState("");
+  const [pw, setPw] = useState("");
+  const [nameMsg, setNameMsg] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [savingName, setSavingName] = useState(false);
+  const [savingPw, setSavingPw] = useState(false);
+
+  useEffect(() => {
+    const meta = (user?.user_metadata ?? {}) as { name?: string };
+    setName(meta.name ?? "");
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="mt-4 rounded-2xl bg-white/60 p-4 text-sm">
+        <div className="font-bold">👤 Account</div>
+        <p className="mt-1 text-muted-foreground">
+          You're not logged in.{" "}
+          <Link to="/login" className="font-bold text-primary hover:underline">Log in</Link>{" "}
+          to edit your profile and sync progress.
+        </p>
+      </div>
+    );
+  }
+
+  async function saveName() {
+    setSavingName(true);
+    setNameMsg(null);
+    const { error } = await updateProfile(name);
+    setNameMsg(error ? { ok: false, msg: error } : { ok: true, msg: "Name updated" });
+    setSavingName(false);
+  }
+
+  async function savePw() {
+    if (pw.length < 6) {
+      setPwMsg({ ok: false, msg: "Password must be at least 6 characters." });
+      return;
+    }
+    setSavingPw(true);
+    setPwMsg(null);
+    const { error } = await updatePassword(pw);
+    setPwMsg(error ? { ok: false, msg: error } : { ok: true, msg: "Password changed." });
+    if (!error) setPw("");
+    setSavingPw(false);
+  }
+
+  return (
+    <div className="mt-4 space-y-3 rounded-2xl bg-white/60 p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-bold">👤 Profile</div>
+        <span className="max-w-[180px] truncate text-xs text-muted-foreground" title={user.email ?? ""}>
+          {user.email}
+        </span>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Display name
+        </label>
+        <div className="flex gap-2">
+          <input
+            value={name}
+            onChange={(e) => { setName(e.target.value); setNameMsg(null); }}
+            placeholder="Your name"
+            className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={saveName}
+            disabled={savingName}
+            className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+          >
+            {savingName ? "…" : "Save"}
+          </button>
+        </div>
+        {nameMsg && (
+          <div className={`mt-1 text-xs ${nameMsg.ok ? "text-success" : "text-destructive"}`}>
+            {nameMsg.ok ? "✅ " : "⚠ "}{nameMsg.msg}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          New password
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => { setPw(e.target.value); setPwMsg(null); }}
+            placeholder="At least 6 characters"
+            autoComplete="new-password"
+            className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={savePw}
+            disabled={savingPw || !pw}
+            className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+          >
+            {savingPw ? "…" : "Change"}
+          </button>
+        </div>
+        {pwMsg && (
+          <div className={`mt-1 text-xs ${pwMsg.ok ? "text-success" : "text-destructive"}`}>
+            {pwMsg.ok ? "✅ " : "⚠ "}{pwMsg.msg}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Daily quests ---------------- */
 function DailyQuests({ quests }: { quests: { id: string; done: boolean }[] }) {
   const labels: Record<string, string> = {
-    learn5: "Study 5 flashcards",
-    quiz3: "Ace the quiz",
-    match: "Finish matching game",
+    [QUESTS.learn5.id]: QUESTS.learn5.label,
+    [QUESTS.quiz3.id]: QUESTS.quiz3.label,
+    [QUESTS.match.id]: QUESTS.match.label,
   };
   return (
     <div className="glass-card w-full max-w-sm p-4">
@@ -560,7 +801,7 @@ function DailyQuests({ quests }: { quests: { id: string; done: boolean }[] }) {
 }
 
 /* ---------------- Flashcards ---------------- */
-function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => void }) {
+function Flashcards({ items, onXP, onQuest, requireAuth }: { items: VocabItem[]; onXP: (n: number) => void; onQuest: (id: string) => void; requireAuth: () => boolean }) {
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState<Set<number>>(new Set());
@@ -572,8 +813,10 @@ function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => 
 
   function next(mark: "know" | "again") {
     if (mark === "know" && !known.has(i)) {
-      setKnown(new Set(known).add(i));
-      onXP(10);
+      const nextKnown = new Set(known).add(i);
+      setKnown(nextKnown);
+      onXP(XP.flashcardKnown);
+      if (nextKnown.size >= QUESTS.learn5.target) onQuest(QUESTS.learn5.id);
     }
     setI((p) => (p + 1) % items.length);
   }
@@ -587,6 +830,7 @@ function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => 
 
   async function generateImage(v: VocabItem) {
     if (loadingImg[v.word] || images[v.word]) return;
+    if (!requireAuth()) return; // login-gated API call
     setLoadingImg((p) => ({ ...p, [v.word]: true }));
     setImgErr((p) => ({ ...p, [v.word]: "" }));
     try {
@@ -602,7 +846,7 @@ function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => 
       const json = await res.json();
       if (!res.ok || !json.url) throw new Error(json.error || `HTTP ${res.status}`);
       setImages((p) => ({ ...p, [v.word]: json.url as string }));
-      onXP(5);
+      onXP(XP.imageGenerated);
     } catch (e) {
       setImgErr((p) => ({
         ...p,
@@ -683,7 +927,7 @@ function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => 
             onClick={() => next("know")}
             className="flex-1 rounded-2xl bg-mint px-4 py-3 font-bold text-mint-foreground transition hover:-translate-y-0.5"
           >
-            ✅ I know this (+10 XP)
+            ✅ I know this (+{XP.flashcardKnown} XP)
           </button>
         </div>
       </div>
@@ -748,7 +992,7 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
           if (ns.size === pairs.length) { onComplete(); }
           return ns;
         });
-        onXP(8);
+        onXP(XP.matchPair);
         setLeftPick(null); setRightPick(null);
       } else {
         setWrong(true);
@@ -807,7 +1051,7 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
         <div className="mt-6 animate-pop-in rounded-3xl bg-mint p-6 text-center text-mint-foreground">
           <div className="text-4xl">🧩</div>
           <div className="mt-1 text-xl font-black">All matched!</div>
-          <div className="text-sm">+30 XP · Badge unlocked: Match Master</div>
+          <div className="text-sm">+{XP.matchComplete} XP · Badge unlocked: Match Master</div>
         </div>
       )}
     </div>
@@ -824,7 +1068,7 @@ function TrueFalse({ items, onXP }: { items: TFItem[]; onXP: (n: number) => void
 
   function pick(v: boolean) {
     setPicked(v);
-    if (v === item.answer) { setScore((s) => s + 1); onXP(6); }
+    if (v === item.answer) { setScore((s) => s + 1); onXP(XP.trueFalseCorrect); }
     window.setTimeout(() => { setPicked(null); setI((p) => p + 1); }, 1200);
   }
 
@@ -887,7 +1131,7 @@ function FillBlanks({ data, onXP }: { data: { dialogue: { speaker: string; line:
     data.dialogue.forEach((d, idx) => {
       if (d.blank && answers[idx]?.toLowerCase() === d.blank.toLowerCase()) ok += 1;
     });
-    onXP(ok * 5);
+    onXP(ok * XP.fillBlankCorrect);
     setChecked(true);
   }
 
@@ -945,7 +1189,7 @@ function renderWithBlank(line: string, node: React.ReactNode) {
 }
 
 /* ---------------- Quiz ---------------- */
-function Quiz({ items, onXP, onPerfect }: { items: QuizItem[]; onXP: (n: number) => void; onPerfect: () => void }) {
+function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n: number) => void; onQuest: (id: string) => void; onPerfect: () => void }) {
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -954,13 +1198,15 @@ function Quiz({ items, onXP, onPerfect }: { items: QuizItem[]; onXP: (n: number)
 
   function pick(idx: number) {
     setPicked(idx);
-    if (idx === item.answerIndex) { setScore((s) => s + 1); onXP(12); }
+    if (idx === item.answerIndex) { setScore((s) => s + 1); onXP(XP.quizCorrect); }
     window.setTimeout(() => { setPicked(null); setI((p) => p + 1); }, 1200);
   }
 
   useEffect(() => {
-    if (done && score === items.length) onPerfect();
-  }, [done, score, items.length, onPerfect]);
+    if (!done) return;
+    if (score >= QUESTS.quiz3.target) onQuest(QUESTS.quiz3.id);
+    if (score === items.length) onPerfect();
+  }, [done, score, items.length, onQuest, onPerfect]);
 
   if (done) {
     return (
@@ -1029,7 +1275,7 @@ function LuckyWheel({ prompts, onXP }: { prompts: string[]; onXP: (n: number) =>
       const idx = Math.floor(((360 - norm) % 360) / seg);
       setChosen(prompts[idx]);
       setSpinning(false);
-      onXP(15);
+      onXP(XP.wheelSpin);
     }, 3600);
   }
 
@@ -1064,7 +1310,7 @@ function LuckyWheel({ prompts, onXP }: { prompts: string[]; onXP: (n: number) =>
           disabled={spinning}
           className="rounded-2xl bg-primary px-6 py-4 text-lg font-black text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5 disabled:opacity-60"
         >
-          {spinning ? "Spinning…" : "🎡 Spin the wheel (+15 XP)"}
+          {spinning ? "Spinning…" : `🎡 Spin the wheel (+${XP.wheelSpin} XP)`}
         </button>
         {chosen && (
           <div className="animate-pop-in mt-4 rounded-3xl bg-lavender p-5 text-lavender-foreground">

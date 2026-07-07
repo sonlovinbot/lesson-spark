@@ -52,15 +52,4 @@ export const BADGES = [
   { id: "level5", label: "Level 5", emoji: "⭐", xp: 500 },
 ] as const;
 
-export function xpToLevel(xp: number) {
-  // level n needs n*100 xp cumulative-ish
-  let lvl = 1;
-  let need = 100;
-  let remaining = xp;
-  while (remaining >= need) {
-    remaining -= need;
-    lvl += 1;
-    need = lvl * 100;
-  }
-  return { level: lvl, into: remaining, need };
-}
+// xpToLevel now lives in src/lib/scoring.ts (single source of truth for scoring).
