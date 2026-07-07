@@ -91,8 +91,8 @@ function PreviewPage() {
           This preview is private or doesn't exist. If it's yours, log in to open it.
         </p>
         <div className="mt-4 flex justify-center gap-2">
-          <Link to="/login" className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground">Log in</Link>
-          <Link to="/" className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold">Home</Link>
+          <Link to="/login" className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground">Log in</Link>
+          <Link to="/" className="rounded-full bg-secondary px-5 py-3 text-sm font-bold">Home</Link>
         </div>
       </CenterCard>
     );
@@ -105,7 +105,7 @@ function PreviewPage() {
       {/* Header */}
       <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between md:p-5">
         <div className="flex items-center gap-3">
-          <Link to="/" className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-black text-white shadow-md">L</Link>
+          <Link to="/" className="grid h-11 w-11 place-items-center rounded-full bg-primary text-lg font-semibold text-white">L</Link>
           <div>
             <div className="text-lg font-black leading-none">Lumi · Shared lesson</div>
             <div className="text-[11px] text-muted-foreground">Read-only preview · no AI actions</div>

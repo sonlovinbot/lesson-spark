@@ -84,7 +84,7 @@ export function ShareModal({ lessonId, onClose }: { lessonId: string; onClose: (
                 onFocus={(e) => e.currentTarget.select()}
                 className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm outline-none"
               />
-              <button onClick={copy} className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+              <button onClick={copy} className="rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
                 {copied ? "✅" : "Copy"}
               </button>
             </div>

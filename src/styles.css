@@ -8,10 +8,10 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 16px);
-  --radius-4xl: calc(var(--radius) + 24px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 10px);
+  --radius-4xl: calc(var(--radius) + 16px);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -47,110 +47,117 @@
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
 
-  --shadow-soft: 0 10px 30px -12px oklch(0.65 0.09 300 / 0.25);
-  --shadow-pop: 0 20px 45px -20px oklch(0.65 0.15 340 / 0.35);
+  /* Apple's elevation: subtle blur/opacity, never hard offsets. */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.10);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.12);
 
-  --font-display: "Fraunces", "Georgia", serif;
-  --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
-  --radius: 1.25rem;
+  --radius: 0.75rem; /* 12px base; cards land ~22px, inputs use rounded-lg */
   color-scheme: light;
 
-  /* Surface tokens (used by .glass-card / .chip so they can flip in dark mode) */
-  --glass-bg: color-mix(in oklch, white 82%, transparent);
-  --glass-border: oklch(1 0 0 / 0.6);
-  --chip-bg: color-mix(in oklch, white 70%, transparent);
-  --chip-border: oklch(1 0 0 / 0.7);
-  --surface: oklch(1 0 0);          /* what bg-white becomes */
-  --surface-soft: oklch(0.98 0.01 320);
+  /* Surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --chip-bg: #f5f5f7;
+  --chip-border: rgba(0, 0, 0, 0.04);
+  --surface: #ffffff;
+  --surface-soft: #f5f5f7;
 
-  --background: oklch(0.985 0.012 320);
-  --foreground: oklch(0.28 0.05 300);
+  --background: #ffffff;
+  --foreground: #1d1d1f;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.28 0.05 300);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.28 0.05 300);
+  --card: #ffffff;
+  --card-foreground: #1d1d1f;
+  --popover: #ffffff;
+  --popover-foreground: #1d1d1f;
 
-  --primary: oklch(0.78 0.14 340);       /* pastel pink */
-  --primary-foreground: oklch(0.22 0.06 340);
+  --primary: #0071e3; /* Apple action blue — the ONLY accent */
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.94 0.05 300);
-  --secondary-foreground: oklch(0.32 0.06 300);
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1d1d1f;
 
-  --muted: oklch(0.96 0.02 320);
-  --muted-foreground: oklch(0.5 0.04 300);
+  --muted: #f5f5f7;
+  --muted-foreground: #6e6e73;
 
-  --accent: oklch(0.86 0.11 200);        /* pastel sky */
-  --accent-foreground: oklch(0.22 0.08 240);
+  --accent: #eef4ff; /* faint blue tint for subtle highlights */
+  --accent-foreground: #0071e3;
 
-  --destructive: oklch(0.72 0.18 25);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive: #ff3b30; /* Apple red */
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.92 0.03 320);
-  --input: oklch(0.94 0.02 320);
-  --ring: oklch(0.78 0.14 340);
+  --border: #ededf2;
+  --input: #d5d5d7;
+  --ring: #0071e3;
 
-  --mint: oklch(0.9 0.09 165);
-  --mint-foreground: oklch(0.28 0.07 165);
-  --peach: oklch(0.9 0.09 45);
-  --peach-foreground: oklch(0.32 0.08 40);
-  --lavender: oklch(0.88 0.08 300);
-  --lavender-foreground: oklch(0.3 0.08 300);
-  --sky: oklch(0.9 0.08 220);
-  --sky-foreground: oklch(0.28 0.08 240);
-  --lemon: oklch(0.94 0.09 100);
-  --lemon-foreground: oklch(0.32 0.08 90);
-  --success: oklch(0.78 0.16 155);
-  --success-foreground: oklch(0.2 0.05 155);
+  /* Game/feedback tints — desaturated, Apple-like. Green=right, red=wrong. */
+  --mint: #e4f6ea;
+  --mint-foreground: #1a7a3a;
+  --peach: #fdecea;
+  --peach-foreground: #c0362b;
+  --lavender: #eeeafb;
+  --lavender-foreground: #4b3ba0;
+  --sky: #e6f0fd;
+  --sky-foreground: #0b5cc0;
+  --lemon: #fbf3d7;
+  --lemon-foreground: #8a6a00;
+  --success: #34c759; /* Apple green */
+  --success-foreground: #ffffff;
 }
 
 .dark {
   color-scheme: dark;
 
-  --glass-bg: color-mix(in oklch, oklch(0.27 0.03 300) 72%, transparent);
-  --glass-border: oklch(1 0 0 / 0.08);
-  --chip-bg: color-mix(in oklch, oklch(0.33 0.03 300) 62%, transparent);
-  --chip-border: oklch(1 0 0 / 0.12);
-  --surface: oklch(0.26 0.03 300);
-  --surface-soft: oklch(0.23 0.03 300);
+  --glass-bg: rgba(29, 29, 31, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --chip-bg: #272729;
+  --chip-border: rgba(255, 255, 255, 0.06);
+  --surface: #1d1d1f;
+  --surface-soft: #161617;
 
-  --background: oklch(0.17 0.03 300);
-  --foreground: oklch(0.93 0.02 320);
+  --background: #000000;
+  --foreground: #f5f5f7;
 
-  --card: oklch(0.24 0.03 300);
-  --card-foreground: oklch(0.93 0.02 320);
-  --popover: oklch(0.24 0.03 300);
-  --popover-foreground: oklch(0.93 0.02 320);
+  --card: #1d1d1f;
+  --card-foreground: #f5f5f7;
+  --popover: #1d1d1f;
+  --popover-foreground: #f5f5f7;
 
-  --primary: oklch(0.78 0.14 340);
-  --primary-foreground: oklch(0.2 0.06 340);
+  --primary: #0a84ff; /* Apple dark-mode blue */
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.32 0.04 300);
-  --secondary-foreground: oklch(0.92 0.02 320);
+  --secondary: #272729;
+  --secondary-foreground: #f5f5f7;
 
-  --muted: oklch(0.28 0.03 300);
-  --muted-foreground: oklch(0.72 0.03 300);
+  --muted: #272729;
+  --muted-foreground: #98989d;
 
-  --accent: oklch(0.7 0.11 200);
-  --accent-foreground: oklch(0.15 0.05 240);
+  --accent: #1c2a3f;
+  --accent-foreground: #0a84ff;
 
-  --destructive: oklch(0.7 0.18 25);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive: #ff453a;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.4 0.03 300 / 0.4);
-  --input: oklch(0.36 0.03 300);
-  --ring: oklch(0.78 0.14 340);
+  --border: #38383a;
+  --input: #48484a;
+  --ring: #0a84ff;
 
-  /* Keep the playful pastels slightly deeper so they don't glare on dark */
-  --mint: oklch(0.82 0.11 165);
-  --peach: oklch(0.82 0.11 45);
-  --lavender: oklch(0.78 0.1 300);
-  --sky: oklch(0.82 0.1 220);
-  --lemon: oklch(0.86 0.11 100);
-  --success: oklch(0.75 0.16 155);
+  --mint: #16341f;
+  --mint-foreground: #59d97e;
+  --peach: #3a1e1b;
+  --peach-foreground: #ff6b5e;
+  --lavender: #23204a;
+  --lavender-foreground: #b3a8f5;
+  --sky: #10243f;
+  --sky-foreground: #6fb0ff;
+  --lemon: #33290a;
+  --lemon-foreground: #e6c15a;
+  --success: #30d158;
+  --success-foreground: #04250f;
 }
 
 @layer base {
@@ -158,34 +165,27 @@
     border-color: var(--color-border);
   }
   html, body {
-    background:
-      radial-gradient(1200px 600px at 10% -10%, oklch(0.94 0.08 340 / 0.7), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, oklch(0.92 0.08 220 / 0.6), transparent 60%),
-      radial-gradient(700px 500px at 50% 110%, oklch(0.93 0.09 165 / 0.55), transparent 60%),
-      var(--color-background);
-    background-attachment: fixed;
+    background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-  }
-  .dark html, .dark body, html.dark, body.dark {
-    background:
-      radial-gradient(1200px 600px at 10% -10%, oklch(0.5 0.12 340 / 0.28), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, oklch(0.45 0.12 260 / 0.25), transparent 60%),
-      radial-gradient(700px 500px at 50% 110%, oklch(0.45 0.1 200 / 0.22), transparent 60%),
-      var(--color-background);
-    background-attachment: fixed;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
+    font-weight: 600;
   }
 }
 
 @layer components {
+  /* Frosted, low-shadow surface — Apple's layered glass. */
   .glass-card {
     background: var(--glass-bg);
-    backdrop-filter: blur(14px);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-soft);
     border-radius: var(--radius-3xl);
@@ -194,29 +194,29 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.35rem 0.75rem;
+    padding: 0.35rem 0.8rem;
     border-radius: 999px;
     background: var(--chip-bg);
     border: 1px solid var(--chip-border);
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--foreground);
   }
 }
 
-/* Dark-mode surface remapping: the app uses bg-white utilities as "cards".
-   Redirect them to the themed dark surface so they don't glare. */
+/* Dark-mode surface remap: the app uses bg-white utilities as "cards". */
 .dark .bg-white { background-color: var(--surface) !important; }
-.dark .bg-white\/90 { background-color: color-mix(in oklch, var(--surface) 90%, transparent) !important; }
-.dark .bg-white\/70 { background-color: color-mix(in oklch, var(--surface) 70%, transparent) !important; }
+.dark .bg-white\/90 { background-color: color-mix(in oklch, var(--surface) 92%, transparent) !important; }
+.dark .bg-white\/70 { background-color: color-mix(in oklch, var(--surface) 72%, transparent) !important; }
+.dark .bg-white\/60 { background-color: color-mix(in oklch, var(--surface) 62%, transparent) !important; }
 .dark .bg-white\/50 { background-color: color-mix(in oklch, var(--surface-soft) 55%, transparent) !important; }
 .dark .hover\:bg-white:hover { background-color: var(--muted) !important; }
 
 @keyframes pop-in {
-  0% { transform: scale(0.6); opacity: 0; }
-  60% { transform: scale(1.08); opacity: 1; }
+  0% { transform: scale(0.96); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.animate-pop-in { animation: pop-in 0.45s cubic-bezier(.2,1.4,.4,1) both; }
+.animate-pop-in { animation: pop-in 0.28s cubic-bezier(0.32, 0.72, 0, 1) both; }
 
 @keyframes float-up {
   0% { transform: translateY(0); opacity: 1; }

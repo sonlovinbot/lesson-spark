@@ -61,7 +61,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
       <div className="mb-6 text-center">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-2xl font-black text-white shadow-md">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary text-2xl font-semibold text-white">
           L
         </div>
         <h1 className="mt-3 text-3xl">{isLogin ? "Welcome back" : "Create your account"}</h1>
@@ -112,7 +112,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="w-full rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5 disabled:opacity-60"
         >
           {busy ? "Please wait…" : isLogin ? "🔓 Log in" : "✨ Sign up"}
         </button>

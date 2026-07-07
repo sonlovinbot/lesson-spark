@@ -154,7 +154,7 @@ function LumiApp() {
           <button
             onClick={generateLesson}
             disabled={loading}
-            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5 disabled:opacity-60"
+            className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5 disabled:opacity-60"
           >
             {loading ? "Generating…" : "✨ Generate lesson"}
           </button>
@@ -255,14 +255,14 @@ function EmptyState({ isAuthed, onGenerate, onLoginGate }: { isAuthed: boolean; 
       {isAuthed ? (
         <button
           onClick={onGenerate}
-          className="rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+          className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
         >
           ✨ Generate your first lesson
         </button>
       ) : (
         <button
           onClick={onLoginGate}
-          className="rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+          className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
         >
           🔓 Log in to start
         </button>
@@ -287,7 +287,7 @@ function AuthGateModal({ onClose }: { onClose: () => void }) {
         <div className="mt-5 flex justify-center gap-2">
           <Link
             to="/login"
-            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+            className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
           >
             🔓 Log in
           </Link>
@@ -359,7 +359,7 @@ function HistoryModal({
                 </button>
                 <button
                   onClick={() => onOpen(rec)}
-                  className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
+                  className="rounded-full bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
                 >
                   Open
                 </button>
@@ -385,7 +385,7 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
   return (
     <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-black text-white shadow-md">
+        <div className="grid h-11 w-11 place-items-center rounded-full bg-primary text-lg font-semibold text-white">
           L
         </div>
         <div>
@@ -400,14 +400,14 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-secondary">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary via-lavender to-accent transition-all"
+            className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="chip !bg-peach">🔥 {streak}d</span>
-        <span className="chip !bg-lemon">⚡ {xp} XP</span>
+        <span className="chip">🔥 {streak}d</span>
+        <span className="chip">⚡ {xp} XP</span>
         <button
           onClick={onHistory}
           title="Lesson history"
@@ -448,7 +448,7 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
         ) : (
           <Link
             to="/login"
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+            className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
           >
             Log in
           </Link>
@@ -596,7 +596,7 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
           </button>
           <button
             onClick={onSave}
-            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+            className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
           >
             {saved ? "✅ Saved" : "💾 Save"}
           </button>
@@ -690,7 +690,7 @@ function ProfileSection() {
           <button
             onClick={saveName}
             disabled={savingName}
-            className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            className="rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
           >
             {savingName ? "…" : "Save"}
           </button>
@@ -718,7 +718,7 @@ function ProfileSection() {
           <button
             onClick={savePw}
             disabled={savingPw || !pw}
-            className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            className="rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
           >
             {savingPw ? "…" : "Change"}
           </button>
