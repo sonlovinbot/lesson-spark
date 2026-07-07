@@ -117,3 +117,19 @@ alter table public.oauth_clients enable row level security;
 alter table public.oauth_codes   enable row level security;
 alter table public.oauth_tokens  enable row level security;
 -- (no policies on purpose: only the service-role key touches these tables)
+
+-- 5) Temporary MCP request log (debugging connector handshakes). Safe to drop
+-- later. Stores no secrets — only request metadata.
+create table if not exists public.mcp_debug (
+  id               bigint generated always as identity primary key,
+  ts               timestamptz not null default now(),
+  method           text,
+  accept           text,
+  has_auth         boolean,
+  auth_valid       boolean,
+  protocol_version text,
+  session_id       text,
+  user_agent       text,
+  note             text
+);
+alter table public.mcp_debug enable row level security;

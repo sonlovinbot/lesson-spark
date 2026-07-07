@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as ApiVocabImageRouteImport } from './routes/api/vocab-image'
 import { Route as ApiTestKeyRouteImport } from './routes/api/test-key'
+import { Route as ApiMcpLogRouteImport } from './routes/api/mcp-log'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp-health'
 import { Route as ApiLessonRouteImport } from './routes/api/lesson'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
@@ -63,6 +64,11 @@ const ApiVocabImageRoute = ApiVocabImageRouteImport.update({
 const ApiTestKeyRoute = ApiTestKeyRouteImport.update({
   id: '/api/test-key',
   path: '/api/test-key',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpLogRoute = ApiMcpLogRouteImport.update({
+  id: '/api/mcp-log',
+  path: '/api/mcp-log',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMcpHealthRoute = ApiMcpHealthRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/mcp-health': typeof ApiMcpHealthRoute
+  '/api/mcp-log': typeof ApiMcpLogRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/mcp-health': typeof ApiMcpHealthRoute
+  '/api/mcp-log': typeof ApiMcpLogRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/mcp-health': typeof ApiMcpHealthRoute
+  '/api/mcp-log': typeof ApiMcpLogRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/mcp-health'
+    | '/api/mcp-log'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/mcp-health'
+    | '/api/mcp-log'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/mcp-health'
+    | '/api/mcp-log'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
@@ -219,6 +231,7 @@ export interface RootRouteChildren {
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   ApiLessonRoute: typeof ApiLessonRoute
   ApiMcpHealthRoute: typeof ApiMcpHealthRoute
+  ApiMcpLogRoute: typeof ApiMcpLogRoute
   ApiTestKeyRoute: typeof ApiTestKeyRoute
   ApiVocabImageRoute: typeof ApiVocabImageRoute
   PIdRoute: typeof PIdRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTestKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mcp-log': {
+      id: '/api/mcp-log'
+      path: '/api/mcp-log'
+      fullPath: '/api/mcp-log'
+      preLoaderRoute: typeof ApiMcpLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mcp-health': {
       id: '/api/mcp-health'
       path: '/api/mcp-health'
@@ -349,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthProtectedResourceRoute,
   ApiLessonRoute: ApiLessonRoute,
   ApiMcpHealthRoute: ApiMcpHealthRoute,
+  ApiMcpLogRoute: ApiMcpLogRoute,
   ApiTestKeyRoute: ApiTestKeyRoute,
   ApiVocabImageRoute: ApiVocabImageRoute,
   PIdRoute: PIdRoute,

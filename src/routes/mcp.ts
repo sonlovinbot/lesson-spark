@@ -73,10 +73,28 @@ export const Route = createFileRoute("/mcp")({
       POST: async ({ request }) => {
         const base = serverBaseUrl(request);
         const wwwAuth = `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`;
-        const wantsSse = (request.headers.get("accept") || "").includes("text/event-stream");
+        const accept = request.headers.get("accept") || "";
+        const wantsSse = accept.includes("text/event-stream");
+
+        const bodyText = await request.text();
+        let payload: unknown = null;
+        try { payload = JSON.parse(bodyText); } catch { /* logged below */ }
+        const method = !Array.isArray(payload) && payload ? (payload as JsonRpcRequest).method : "(batch/parse-error)";
 
         const token = getBearer(request);
         const auth = token ? await resolveAccessToken(token) : null;
+
+        // Best-effort debug log (no secrets).
+        await logMcp({
+          method,
+          accept,
+          has_auth: !!token,
+          auth_valid: !!auth,
+          protocol_version: request.headers.get("mcp-protocol-version"),
+          session_id: request.headers.get("mcp-session-id"),
+          user_agent: request.headers.get("user-agent"),
+        });
+
         if (!auth) {
           return new Response(JSON.stringify({ error: "invalid_token" }), {
             status: 401,
@@ -84,10 +102,7 @@ export const Route = createFileRoute("/mcp")({
           });
         }
 
-        let payload: unknown;
-        try {
-          payload = await request.json();
-        } catch {
+        if (payload == null) {
           return rpcError(null, -32700, "Parse error", wantsSse);
         }
 
@@ -269,4 +284,22 @@ function randomSessionId(): string {
   const a = new Uint8Array(16);
   crypto.getRandomValues(a);
   return Array.from(a, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function logMcp(fields: {
+  method: string;
+  accept: string;
+  has_auth: boolean;
+  auth_valid: boolean;
+  protocol_version: string | null;
+  session_id: string | null;
+  user_agent: string | null;
+}) {
+  try {
+    const admin = getAdminClient();
+    if (!admin) return;
+    await admin.from("mcp_debug").insert(fields);
+  } catch {
+    /* never let logging break the request */
+  }
 }

@@ -12,4 +12,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Longer function timeouts on Vercel for the slow AI endpoints (ignored on
+  // other presets). Lesson generation + image polling exceed the 10s default.
+  // Note: durations > 10s require a Vercel Pro plan.
+  nitro: {
+    vercel: {
+      functionRules: {
+        "/mcp": { maxDuration: 60 },
+        "/api/lesson": { maxDuration: 60 },
+        "/api/vocab-image": { maxDuration: 100 },
+      },
+    },
+  },
 });
