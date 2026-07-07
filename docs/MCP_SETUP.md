@@ -42,11 +42,10 @@ Add these to `.env` (local) **and** the Vercel project settings (Production).
 
 ## 4. MCP connector (OAuth 2.1)
 
-Endpoints implemented:
+Endpoints implemented (all served natively by the app — no rewrites needed):
 
-- `/.well-known/oauth-authorization-server` and
-  `/.well-known/oauth-protected-resource` (via `vercel.json` rewrites →
-  `/api/oauth/authorization-server` and `/api/oauth/protected-resource`)
+- `/.well-known/oauth-authorization-server` — AS metadata
+- `/.well-known/oauth-protected-resource` — resource metadata
 - `/api/oauth/register` — Dynamic Client Registration
 - `/authorize` — consent page (logs in via Supabase, mints a code)
 - `/api/oauth/token` — code + refresh grants, PKCE (S256)
@@ -66,9 +65,16 @@ MCP tools: `create_lesson`, `list_lessons`, `get_lesson`, `get_preview_link`.
 
 ### Deploy notes (Vercel)
 
-- The project builds with **nitro**; set the deploy preset to Vercel if the
-  default (Cloudflare) is used. Check `vite.config.ts` / nitro config.
-- `vercel.json` maps the `.well-known` paths to the metadata routes.
+- The project builds with **nitro**, whose default preset is Cloudflare (set by
+  the Lovable config). To build for Vercel, add an env var in the Vercel project:
+  **`NITRO_PRESET=vercel`**. This is the only build-config change needed — it
+  does not touch the repo, so Lovable's own Cloudflare builds keep working.
+- Set the other env vars from section 2 in Vercel (Production scope), especially
+  `SUPABASE_SERVICE_ROLE_KEY`, `PUBLIC_APP_URL`, `VITE_PUBLIC_APP_URL`,
+  `COACHIO_API_KEY`.
+- The `.well-known/*` metadata endpoints are real app routes, so no `vercel.json`
+  or rewrites are required.
+- Vercel framework preset: "Other"; build command `bun run build` (or `vite build`).
 - Local dev can't be reached by Claude/ChatGPT (they're cloud). Test the MCP
   logic locally with curl / the MCP Inspector, or use a tunnel (ngrok).
 

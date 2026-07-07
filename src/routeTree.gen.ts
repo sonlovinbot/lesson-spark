@@ -18,11 +18,11 @@ import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as ApiVocabImageRouteImport } from './routes/api/vocab-image'
 import { Route as ApiTestKeyRouteImport } from './routes/api/test-key'
 import { Route as ApiLessonRouteImport } from './routes/api/lesson'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as ApiOauthTokenRouteImport } from './routes/api/oauth/token'
 import { Route as ApiOauthRegisterRouteImport } from './routes/api/oauth/register'
-import { Route as ApiOauthProtectedResourceRouteImport } from './routes/api/oauth/protected-resource'
 import { Route as ApiOauthAuthorizeRouteImport } from './routes/api/oauth/authorize'
-import { Route as ApiOauthAuthorizationServerRouteImport } from './routes/api/oauth/authorization-server'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -69,6 +69,18 @@ const ApiLessonRoute = ApiLessonRouteImport.update({
   path: '/api/lesson',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownOauthProtectedResourceRoute =
+  DotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownOauthAuthorizationServerRoute =
+  DotwellKnownOauthAuthorizationServerRouteImport.update({
+    id: '/.well-known/oauth-authorization-server',
+    path: '/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiOauthTokenRoute = ApiOauthTokenRouteImport.update({
   id: '/api/oauth/token',
   path: '/api/oauth/token',
@@ -79,23 +91,11 @@ const ApiOauthRegisterRoute = ApiOauthRegisterRouteImport.update({
   path: '/api/oauth/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOauthProtectedResourceRoute =
-  ApiOauthProtectedResourceRouteImport.update({
-    id: '/api/oauth/protected-resource',
-    path: '/api/oauth/protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiOauthAuthorizeRoute = ApiOauthAuthorizeRouteImport.update({
   id: '/api/oauth/authorize',
   path: '/api/oauth/authorize',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOauthAuthorizationServerRoute =
-  ApiOauthAuthorizationServerRouteImport.update({
-    id: '/api/oauth/authorization-server',
-    path: '/api/oauth/authorization-server',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,13 +103,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
-  '/api/oauth/authorization-server': typeof ApiOauthAuthorizationServerRoute
   '/api/oauth/authorize': typeof ApiOauthAuthorizeRoute
-  '/api/oauth/protected-resource': typeof ApiOauthProtectedResourceRoute
   '/api/oauth/register': typeof ApiOauthRegisterRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
 }
@@ -119,13 +119,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
-  '/api/oauth/authorization-server': typeof ApiOauthAuthorizationServerRoute
   '/api/oauth/authorize': typeof ApiOauthAuthorizeRoute
-  '/api/oauth/protected-resource': typeof ApiOauthProtectedResourceRoute
   '/api/oauth/register': typeof ApiOauthRegisterRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
 }
@@ -136,13 +136,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/api/lesson': typeof ApiLessonRoute
   '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
   '/p/$id': typeof PIdRoute
-  '/api/oauth/authorization-server': typeof ApiOauthAuthorizationServerRoute
   '/api/oauth/authorize': typeof ApiOauthAuthorizeRoute
-  '/api/oauth/protected-resource': typeof ApiOauthProtectedResourceRoute
   '/api/oauth/register': typeof ApiOauthRegisterRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
 }
@@ -154,13 +154,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/register'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
-    | '/api/oauth/authorization-server'
     | '/api/oauth/authorize'
-    | '/api/oauth/protected-resource'
     | '/api/oauth/register'
     | '/api/oauth/token'
   fileRoutesByTo: FileRoutesByTo
@@ -170,13 +170,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/register'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
-    | '/api/oauth/authorization-server'
     | '/api/oauth/authorize'
-    | '/api/oauth/protected-resource'
     | '/api/oauth/register'
     | '/api/oauth/token'
   id:
@@ -186,13 +186,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/register'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/api/lesson'
     | '/api/test-key'
     | '/api/vocab-image'
     | '/p/$id'
-    | '/api/oauth/authorization-server'
     | '/api/oauth/authorize'
-    | '/api/oauth/protected-resource'
     | '/api/oauth/register'
     | '/api/oauth/token'
   fileRoutesById: FileRoutesById
@@ -203,13 +203,13 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   RegisterRoute: typeof RegisterRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   ApiLessonRoute: typeof ApiLessonRoute
   ApiTestKeyRoute: typeof ApiTestKeyRoute
   ApiVocabImageRoute: typeof ApiVocabImageRoute
   PIdRoute: typeof PIdRoute
-  ApiOauthAuthorizationServerRoute: typeof ApiOauthAuthorizationServerRoute
   ApiOauthAuthorizeRoute: typeof ApiOauthAuthorizeRoute
-  ApiOauthProtectedResourceRoute: typeof ApiOauthProtectedResourceRoute
   ApiOauthRegisterRoute: typeof ApiOauthRegisterRoute
   ApiOauthTokenRoute: typeof ApiOauthTokenRoute
 }
@@ -279,6 +279,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLessonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-authorization-server': {
+      id: '/.well-known/oauth-authorization-server'
+      path: '/.well-known/oauth-authorization-server'
+      fullPath: '/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/oauth/token': {
       id: '/api/oauth/token'
       path: '/api/oauth/token'
@@ -293,25 +307,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOauthRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/oauth/protected-resource': {
-      id: '/api/oauth/protected-resource'
-      path: '/api/oauth/protected-resource'
-      fullPath: '/api/oauth/protected-resource'
-      preLoaderRoute: typeof ApiOauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/oauth/authorize': {
       id: '/api/oauth/authorize'
       path: '/api/oauth/authorize'
       fullPath: '/api/oauth/authorize'
       preLoaderRoute: typeof ApiOauthAuthorizeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/oauth/authorization-server': {
-      id: '/api/oauth/authorization-server'
-      path: '/api/oauth/authorization-server'
-      fullPath: '/api/oauth/authorization-server'
-      preLoaderRoute: typeof ApiOauthAuthorizationServerRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -323,13 +323,15 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   RegisterRoute: RegisterRoute,
+  DotwellKnownOauthAuthorizationServerRoute:
+    DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   ApiLessonRoute: ApiLessonRoute,
   ApiTestKeyRoute: ApiTestKeyRoute,
   ApiVocabImageRoute: ApiVocabImageRoute,
   PIdRoute: PIdRoute,
-  ApiOauthAuthorizationServerRoute: ApiOauthAuthorizationServerRoute,
   ApiOauthAuthorizeRoute: ApiOauthAuthorizeRoute,
-  ApiOauthProtectedResourceRoute: ApiOauthProtectedResourceRoute,
   ApiOauthRegisterRoute: ApiOauthRegisterRoute,
   ApiOauthTokenRoute: ApiOauthTokenRoute,
 }

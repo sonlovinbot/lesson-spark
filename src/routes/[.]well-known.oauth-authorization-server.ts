@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serverBaseUrl, json } from "@/lib/oauth";
 
-/** OAuth 2.1 Authorization Server Metadata (RFC 8414).
- *  Exposed at /.well-known/oauth-authorization-server via vercel.json rewrite. */
-export const Route = createFileRoute("/api/oauth/authorization-server")({
+export const Route = createFileRoute("/.well-known/oauth-authorization-server")({
   server: {
     handlers: {
       GET: async ({ request }) => {
